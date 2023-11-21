@@ -52,7 +52,7 @@
 ;; -------------------- ;;
 ;;        CONCAT        ;;
 ;; -------------------- ;;
-(lun concat! [sep ...]
+(lambda M.concat! [sep ...]
   "smartly concats all strings in '...' with 'sep'."
   (check [:string sep])
   ; collect stack
@@ -101,7 +101,7 @@
         (table.insert out (tostring x))))
   (concat! sep (unpack out)))
 
-(lun exec! [command ...]
+(lambda M.exec! [command ...]
   "translates commands written in fennel to vim.cmd calls."
   (local commands [command ...])
   (local out  [])
@@ -131,7 +131,7 @@
 
     (values modes opts)))
 
-(lun map! [args lhs rhs ?desc]
+(lambda M.map! [args lhs rhs ?desc]
   "defines vim keymap for modes in 'args'."
   (check [:fseq   args
           :real   (as mode (. args 1))
@@ -184,7 +184,7 @@
 
   `(vim.api.nvim_create_autocmd ,events ,opts))
 
-(lun augroup! [name ...]
+(lambda M.augroup! [name ...]
   "defines augroup with 'name' and '...' containing [[groups] pat cmd] chunks."
   (check [:string name])
   ; define augroup
@@ -213,7 +213,7 @@
         (tset out val (. args (inc! idx)))))
   out)
 
-(lun command! [args lhs rhs]
+(lambda M.command! [args lhs rhs]
   "defines a user command from 'lhs' and 'rhs'."
   (check [:even (as args (length args))])
   (local args (parse-command-args args))
@@ -245,31 +245,31 @@
            (tset ,method (string.sub ,name 1 -2) (not (. vim.o (string.sub ,name 1 -2))))
            (tset ,method ,name true))))
 
-(lun set! [name ?val]
+(lambda M.set! [name ?val]
   "sets vim option 'name'."
   (option-setter 'vim.opt name ?val))
 
-(lun setlocal! [name ?val]
+(lambda M.setlocal! [name ?val]
   "sets local vim option 'name'."
   (option-setter 'vim.opt_local name ?val))
 
-(lun setglobal! [name ?val]
+(lambda M.setglobal! [name ?val]
   "sets global vim option 'name' without changing the local value."
   (option-setter 'vim.opt_global name ?val))
 
-(lun set+ [name val]
+(lambda M.set+ [name val]
   "appends 'val' to vim option 'name'."
   `(: (. vim.opt ,(parse-sym name)) :append ,val))
 
-(lun set^ [name val]
+(lambda M.set^ [name val]
   "prepends 'val' to vim option 'name'."
   `(: (. vim.opt ,(parse-sym name)) :prepend ,val))
 
-(lun rem! [name val]
+(lambda M.rem! [name val]
   "removes 'val' from vim option 'name'."
   `(: (. vim.opt ,(parse-sym name)) :remove ,val))
 
-(lun color! [name]
+(lambda M.color! [name]
   "sets vim colorscheme to 'name'."
   (check [:string name])
   `(vim.cmd ,(.. "colorscheme " name)))
@@ -278,11 +278,11 @@
 ;; -------------------- ;;
 ;;      VARIABLES       ;;
 ;; -------------------- ;;
-(lun g! [name val]
+(lambda M.g! [name val]
   "sets global variable 'name' to 'val'."
   `(tset vim.g ,(parse-sym name) ,val))
 
-(lun b! [name val]
+(lambda M.b! [name val]
   "sets buffer scoped variable 'name' to 'val'."
   `(tset vim.b ,(parse-sym name) ,val))
 

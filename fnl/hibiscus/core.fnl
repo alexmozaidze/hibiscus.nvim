@@ -29,7 +29,7 @@
 ;; -------------------- ;;
 ;;        CLASS         ;;
 ;; -------------------- ;;
-(lun class! [name ...]
+(lambda M.class! [name ...]
   "defines a class of 'name'."
   (check [:sym name])
   (local methods (sym :__methods__))
@@ -49,7 +49,7 @@
                 ,(.. "Error in class " (tostring name) ", init method must return a table"))
         (setmetatable class# ,mtbl)))}))
 
-(lun method! [name args ...]
+(lambda M.method! [name args ...]
   "defines a method within the scope of class."
   (check [:sym name :seq args])
   (each [_ arg (ipairs args)] (check [:sym arg]))
@@ -61,7 +61,7 @@
   `(tset ,methods ,(tostring name)
          (lambda ,args ,...)))
 
-(lun metamethod! [name args ...]
+(lambda M.metamethod! [name args ...]
   "defines a metamethod within the scope of class."
   (check [:sym name :seq args])
   (each [_ arg (ipairs args)] (check [:sym arg]))
@@ -72,7 +72,7 @@
   `(tset ,mtbl ,(tostring name)
          (lambda ,args ,...)))
 
-(lun instanceof? [val class]
+(lambda M.instanceof? [val class]
   "checks if 'val' is an instance of 'class'."
   `(let [v# ,val
          c# ,class]
@@ -84,7 +84,7 @@
 ;; -------------------- ;;
 ;;       GENERAL        ;;
 ;; -------------------- ;;
-(fun or= [val ...]
+(fn M.or= [val ...]
   "checks if 'val' is equal to any one of '...'"
   (local eq [])
   (each [_ arg (ipairs [...])]
@@ -92,7 +92,7 @@
   `(let [,(sym :__val__) ,val]
     (or ,(unpack eq))))
 
-(lun enum! [name ...]
+(lambda M.enum! [name ...]
   "defines enumerated values for names."
   (let [args [name ...]
         vals []]
@@ -101,7 +101,7 @@
       (table.insert vals i))
     `(local ,args ,vals)))
 
-(lun time! [label body ...]
+(lambda M.time! [label body ...]
   "evaluates 'body' and calculates its runtime."
   (check [:string label])
   (local body [body ...])
@@ -121,7 +121,7 @@
          (((. (require-fennel) :parser) expr "fstring")))
   out)
 
-(lun fstring! [str]
+(lambda M.fstring! [str]
   "wrapper around string.format, works like javascript's template literates."
   (check [:string str])
   (local args [])
@@ -136,45 +136,45 @@
 ;; -------------------- ;;
 ;;       CHECKING       ;;
 ;; -------------------- ;;
-(fun nil? [x]
+(fn M.nil? [x]
   "checks if value of 'x' is nil."
   `(= nil ,x))
 
-(fun boolean? [x]
+(fn M.boolean? [x]
   "checks if 'x' is of boolean type."
   `(= :boolean (type ,x)))
 
-(fun string? [x]
+(fn M.string? [x]
   "checks if 'x' is of string type."
   `(= :string (type ,x)))
 
-(fun number? [x]
+(fn M.number? [x]
   "checks if 'x' is of number type."
   `(= :number (type ,x)))
 
-(fun odd? [x]
+(fn M.odd? [x]
   "checks if 'x' is mathematically of odd parity ;}"
   `(and ,(number? x)
         (= 1 (_G.bit.band ,x 1))))
 
-(fun even? [x]
+(fn M.even? [x]
   "checks if 'x' is mathematically of even parity ;}"
   `(and ,(number? x)
         (= 0 (_G.bit.band ,x 1))))
 
-(fun fn? [x]
+(fn M.fn? [x]
   "checks if 'x' is of function type."
   `(= :function (type ,x)))
 
-(fun table? [x]
+(fn M.table? [x]
   "checks if 'x' is of table type."
   `(= :table (type ,x)))
 
-(fun seq? [tbl]
+(fn M.seq? [tbl]
   "checks if 'tbl' is a valid list."
   `(vim.tbl_islist ,tbl))
 
-(fun empty? [x]
+(fn M.empty? [x]
   "checks if 'x' is empty."
   `(if ,(string? x)
         (= 0 (length ,x))
@@ -186,19 +186,19 @@
 ;; -------------------- ;;
 ;;        NUMBER        ;;
 ;; -------------------- ;;
-(lun inc! [int]
+(lambda M.inc! [int]
   "increments 'int' by 1."
   `(+ ,int 1))
 
-(lun ++ [v]
+(lambda M.++ [v]
   "increments variable 'v' by 1."
   (set* v (inc! v)))
 
-(lun dec! [int]
+(lambda M.dec! [int]
   "decrements 'int' by 1."
   `(- ,int 1))
 
-(lun -- [v]
+(lambda M.-- [v]
   "decrements variable 'v' by 1."
   (set* v (dec! v)))
 
@@ -206,7 +206,7 @@
 ;; -------------------- ;;
 ;;        STRING        ;;
 ;; -------------------- ;;
-(lun split! [str sep]
+(lambda M.split! [str sep]
   "splits 'str' into a list at each 'sep'."
   `(do
    (local out# [])
@@ -214,21 +214,21 @@
      (table.insert out# x#))
    out#))
 
-(lun append! [v str]
+(lambda M.append! [v str]
   "appends 'str' to variable 'v'."
   (check [:sym (as var v)])
   (set* v (list `.. v str)))
 
-(lun tappend! [tbl key str]
+(lambda M.tappend! [tbl key str]
   "appends 'str' to 'key' of table 'tbl'."
   (tset* tbl key `(.. (or (. ,tbl ,key) "") ,str)))
 
-(lun prepend! [v str]
+(lambda M.prepend! [v str]
   "prepends 'str' to variable 'v'."
   (check [:sym (as var v)])
   (set* v (list `.. str v)))
 
-(lun tprepend! [tbl key str]
+(lambda M.tprepend! [tbl key str]
   "prepends 'str' to 'key' of table 'tbl'."
   (tset* tbl key `(.. ,str (or (. ,tbl ,key) ""))))
 
@@ -236,7 +236,7 @@
 ;; -------------------- ;;
 ;;        TABLE         ;;
 ;; -------------------- ;;
-(lun tmap! [tbl handler]
+(lambda M.tmap! [tbl handler]
   "maps values in table with 'handler'."
   `(let [out# {}
          tbl# ,tbl
@@ -245,7 +245,7 @@
        (tset out# key# (fnc# val# key# tbl#)))
      out#))
 
-(lun filter! [lst handler]
+(lambda M.filter! [lst handler]
   "filters values in list with 'handler'."
   `(let [out# []
          fnc# ,handler]
@@ -254,14 +254,14 @@
            (table.insert out# val#)))
      out#))
 
-(lun merge-list! [list1 list2]
+(lambda M.merge-list! [list1 list2]
   "appends all values of 'list1' and 'list2' together."
   `(let [out# (vim.deepcopy ,list1)]
      (each [# val# (ipairs (vim.deepcopy ,list2))]
            (table.insert out# val#))
      out#))
 
-(lun merge-tbl! [tbl1 tbl2]
+(lambda M.merge-tbl! [tbl1 tbl2]
   "merges 'tbl2' onto 'tbl1', returns a new table."
   `(do
    (fn mrg# [x# y#]
@@ -273,13 +273,13 @@
      out#)
    (mrg# ,tbl1 ,tbl2)))
 
-(lun merge! [tbl1 tbl2]
+(lambda M.merge! [tbl1 tbl2]
   "merges 'tbl2' onto 'tbl1', correctly appending lists."
   `(if (and ,(seq? tbl1) ,(seq? tbl2))
        ,(merge-list! tbl1 tbl2)
        ,(merge-tbl! tbl1 tbl2)))
 
-(lun vmerge! [v tbl]
+(lambda M.vmerge! [v tbl]
   "merges 'tbl' onto variable 'v'."
   (check [:sym (as var v)])
   (set* v (M.merge! v tbl)))
@@ -288,7 +288,7 @@
 ;; -------------------- ;;
 ;;     PRETTY PRINT     ;;
 ;; -------------------- ;;
-(fun dump! [...]
+(fn M.dump! [...]
   "pretty prints '...' into human readable form."
   `(let [out# []]
      (if (?. _G.tangerine :api :serialize)

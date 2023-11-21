@@ -7,28 +7,6 @@
   "shorthand for assert-compile."
   `(assert-compile ,cond (.. "  " ,(sym :__name__) ": " ,...)))
 
-
-;; -------------------- ;;
-;;      FUNCTIONS       ;;
-;; -------------------- ;;
-(lambda M.fun [name args ...]
-  "defines function 'name' and exports it to M."
-  (local name-sym `(local ,(sym :__name__) ,(tostring name)))
-  `(tset M ,(tostring name) (fn ,name ,args ,name-sym ,...)))
-
-(lambda M.lun [name args ...]
-  "defines lambda function 'name' and exports it to M."
-  (local name-str (tostring name))
-  (local name-sym `(local ,(sym :__name__) ,name-str))
-  (local asrt [])
-  (each [_ arg (ipairs args)]
-    (if (and (not= "..." (tostring arg)) (not= "?" (string.sub (tostring arg) 1 1)))
-        (table.insert asrt
-          (ass `(not= ,arg nil) "Missing required argument '" (tostring arg) "'."))))
-  `(tset M ,name-str
-     (fn ,name ,args ,name-sym (do ,(unpack asrt)) ,...)))
-
-
 ;; -------------------- ;;
 ;;       CHECKING       ;;
 ;; -------------------- ;;
